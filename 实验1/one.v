@@ -4,9 +4,9 @@
 // Engineer: 
 // 
 // Create Date:    19:59:00 10/30/2019 
-// Design Name: 
+// Design Name:    番番
 // Module Name:    one 
-// Project Name: 
+// Project Name:   五输入表决器	
 // Target Devices: 
 // Tool versions: 
 // Description: 
