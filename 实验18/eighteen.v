@@ -1,3 +1,24 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer:       番番
+// 
+// Create Date:    11:53:22 12/04/2019 
+// Design Name:    数码管扫描显示
+// Module Name:    eighteen 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: 
+//
+//////////////////////////////////////////////////////////////////////////////////
+
 //用于控制数码管刷新频率
 module CLK_5ms(rst,clk_in,clk_out);
 	input rst,clk_in;
