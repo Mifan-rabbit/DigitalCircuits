@@ -16,3 +16,4 @@
 ## [实验15： 移位寄存器设计](https://github.com/Mifan-rabbit/DigitalCircuits/tree/master/%E5%AE%9E%E9%AA%8C15)
 ## [实验16： 定时与分频实验](https://github.com/Mifan-rabbit/DigitalCircuits/tree/master/%E5%AE%9E%E9%AA%8C16)
 ## [实验18： 数码管扫描显示](https://github.com/Mifan-rabbit/DigitalCircuits/tree/master/%E5%AE%9E%E9%AA%8C18)
+## [实验25： 交通灯设计](https://github.com/Mifan-rabbit/DigitalCircuits/tree/master/%E5%AE%9E%E9%AA%8C25)
