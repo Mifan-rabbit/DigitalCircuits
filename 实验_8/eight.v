@@ -18,7 +18,7 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-module TOP(clka, rst, PC, Inst_code, ALU_OP, Write_Reg, rs, rt, rd, rs_data, rt_data, rd_data, ZF, OF);
+module TOP(clka, rst, PC, Inst_code, ALU_OP, Write_Reg, rs, rt, rd, rs_data, rt_data, rd_data, shamt, ZF, OF);
 	input clka;
 	input rst;
 	output [31:0]PC;	
@@ -31,15 +31,36 @@ module TOP(clka, rst, PC, Inst_code, ALU_OP, Write_Reg, rs, rt, rd, rs_data, rt_
 	output [31:0] rs_data;  //rs数据
 	output [31:0] rt_data;  //rt数据
 	output [31:0] rd_data;  //rd数据
-	output ZF, OF; 
+	output [4:0] shamt;
+	output reg ZF, OF; 
+	wire Set_ZF, Set_OF;
+	wire FR_ZF, FR_OF;
+	wire rs_shamt;
+	wire [31:0] alu_a;
+
+	always@(negedge clka or posedge rst)
+	begin
+		if(rst)
+			begin
+				OF = 1'b0;
+				ZF = 1'b0;
+			end
+		else
+			begin
+			if(Set_OF) OF = FR_OF;
+			if(Set_ZF) ZF = FR_ZF;
+			end
+	end
+
 	
 	// 连接指令存储器和取指令部件
 	Get_Inst get_inst (clka, rst, Inst_code, PC);
-	// 译码及控制单元
-	analysis a(Inst_code, ALU_OP, Write_Reg, rs, rt, rd);
+	// 译码及控制单元 
+	analysis a(Inst_code, ALU_OP, Write_Reg, rs, rt, rd, shamt, Set_ZF, Set_OF, rs_shamt);
 	// ALU、寄存器连接
+	assign alu_a = (rs_shamt)?{{27{1'b0}},shamt}: rs_data;
 	REG r (clka, rst, Write_Reg, rs, rt, rd, rd_data, rs_data, rt_data);
-   ALU alu (ALU_OP, rs_data, rt_data, rd_data, ZF, OF);	 
+   ALU alu (ALU_OP, alu_a, rt_data, rd_data, FR_ZF, FR_OF);	 
 endmodule
 
 
@@ -64,7 +85,7 @@ module Get_Inst(clka, rst, Inst_code, PC);
 	end
 
 	myInst mmyinst (
-	  .clka(~clka), // input clka
+	  .clka(clka), // input clka
 	  .addra(PC[7:2]), // input [5 : 0] addra
 	  .douta(Inst_code) // output [31 : 0] douta
 	);
@@ -73,13 +94,16 @@ endmodule
 
 
 
-module analysis(inst,ALU_OP,Write_Reg,rs,rt,rd);
+module analysis(inst,ALU_OP,Write_Reg,rs,rt,rd,shamt,Set_ZF,Set_OF,rs_shamt);
 	input [31:0] inst;
 	output reg [2:0] ALU_OP;
 	output reg Write_Reg;
 	output reg [4:0] rs;
 	output reg [4:0] rt;
 	output reg [4:0] rd;
+	output reg Set_ZF, Set_OF;
+	output reg [4:0] shamt;
+	output reg rs_shamt;
 always@(*)
 begin
 	if(inst[31:26]==6'b000000) //判断是否为R型
@@ -87,17 +111,24 @@ begin
       rs=inst[25:21];       //rs
       rt=inst[20:16];       //rt	 
       rd=inst[15:11];       //rd 
+		shamt = inst[10:6];
 		Write_Reg=1;
+		Set_ZF=1'b1; 
+		Write_Reg=1'b1;
+		rs_shamt=1'b0;
+
 		case(inst[5:0])   //映射对应的ALU
-         6'b100000:begin ALU_OP=3'b100;end
-         6'b100010:begin ALU_OP=3'b101;end
-         6'b100100:begin ALU_OP=3'b000;end
-         6'b100101:begin ALU_OP=3'b001;end
-         6'b100110:begin ALU_OP=3'b010;end
-         6'b100111:begin ALU_OP=3'b011;end
-         6'b101011:begin ALU_OP=3'b110;end 
-         6'b000100:begin ALU_OP=3'b111;end 
-         6'b001000:begin ALU_OP=3'b100;end
+         6'b100000:begin ALU_OP=3'b100;Set_OF=1'b1;end
+         6'b100010:begin ALU_OP=3'b101;Set_OF=1'b1;end
+         6'b100100:begin ALU_OP=3'b000;Set_OF=1'b0;end
+         6'b100101:begin ALU_OP=3'b001;Set_OF=1'b0;end
+         6'b100110:begin ALU_OP=3'b010;Set_OF=1'b0;end
+         6'b100111:begin ALU_OP=3'b011;Set_OF=1'b0;end
+         6'b101011:begin ALU_OP=3'b110;Set_OF=1'b0;end 
+         6'b000100:begin ALU_OP=3'b111;Set_OF=1'b1;end 
+         6'b001000:begin ALU_OP=3'b100;Set_OF=1'b1;end         
+			6'b000000:begin ALU_OP=3'b111;Set_OF=1'b1;rs_shamt=1'b1;end
+
 			default:begin ALU_OP=3'bxxx;end
 		endcase
      end 
@@ -156,7 +187,7 @@ module REG(CLK,Reset,Write_Reg,R_Addr_A,R_Addr_B,W_Addr,W_Data,R_Data_A,R_Data_B
 	reg [31:0] REG_Files[0:31];
 	integer i;
 	initial for(i=0;i<32;i=i+1) REG_Files[i]<=32'h00000000; //初始化寄存器
-	always @(posedge CLK or posedge Reset)	//下降沿存储
+	always @(negedge CLK or posedge Reset)		//下降沿存储
 	begin
 		if(Reset)
 			begin
@@ -172,7 +203,6 @@ module REG(CLK,Reset,Write_Reg,R_Addr_A,R_Addr_B,W_Addr,W_Data,R_Data_A,R_Data_B
 	assign R_Data_B=REG_Files[R_Addr_B];
 endmodule
 
-//////////////////////////////////////////////////////////////////////////////////
 
 module LED(clka, clk_in, rst, choice, AN, seg, ZF, OF, PC, Inst_code, rd_data, Data);
 	input clka;	
@@ -196,7 +226,8 @@ module LED(clka, clk_in, rst, choice, AN, seg, ZF, OF, PC, Inst_code, rd_data, D
 	output [31:0] Inst_code;	//指令
 	output [31:0] rd_data;  //rd数据
 	
-	wire clk_out;
+	wire clk_out;    
+	wire [4:0] shamt; 
 	output reg [31:0]Data;
 	
 	always@(*)
@@ -210,10 +241,10 @@ module LED(clka, clk_in, rst, choice, AN, seg, ZF, OF, PC, Inst_code, rd_data, D
 	
 	shuaXin sshu(~rst, clk_in, clk_out);
 	show ssho(~rst, clk_out, Data, AN, seg);
-	TOP top(~clka, ~rst, PC, Inst_code, ALU_OP, Write_Reg, rs, rt, rd, rs_data, rt_data, rd_data, ZF, OF);	 
+	TOP top (~clka, ~rst, PC, Inst_code, ALU_OP, Write_Reg, rs, rt, rd, rs_data, rt_data, rd_data, shamt, ZF, OF);
+	 
 	
 endmodule
-
 
 
 //用于控制数码管刷新频率
@@ -337,5 +368,3 @@ module show(rst,clk,Data,AN,seg);
 				end
 		end	
 endmodule
-
-
