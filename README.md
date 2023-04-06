@@ -9,7 +9,7 @@
 ### [实验6： 加法器设计](https://github.com/Mifan-rabbit/DigitalCircuits/tree/master/%E5%AE%9E%E9%AA%8C6)
 ### [实验9： D触发器设计](https://github.com/Mifan-rabbit/DigitalCircuits/tree/master/%E5%AE%9E%E9%AA%8C9)
 ### [实验10： JK触发器设计](https://github.com/Mifan-rabbit/DigitalCircuits/tree/master/%E5%AE%9E%E9%AA%8C10)
-### [实验11： 同步二妗子计数器设计](https://github.com/Mifan-rabbit/DigitalCircuits/tree/master/%E5%AE%9E%E9%AA%8C11)
+### [实验11： 同步二进制计数器设计](https://github.com/Mifan-rabbit/DigitalCircuits/tree/master/%E5%AE%9E%E9%AA%8C11)
 ### [实验12： 十进制计数器设计](https://github.com/Mifan-rabbit/DigitalCircuits/tree/master/%E5%AE%9E%E9%AA%8C12)
 ### [实验13： 可逆计数器设计](https://github.com/Mifan-rabbit/DigitalCircuits/tree/master/%E5%AE%9E%E9%AA%8C13)
 ### [实验14： 基本寄存器设计](https://github.com/Mifan-rabbit/DigitalCircuits/tree/master/%E5%AE%9E%E9%AA%8C14)
